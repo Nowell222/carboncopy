@@ -37,3 +37,6 @@ carbon-tracker/
 ```
 
 For detailed setup instructions, see [docs/SETUP.md](docs/SETUP.md)
+=======
+# carboncopy
+>>>>>>> bcbb28e80f0858b7a86c350325a0f5305e1480a8
