@@ -1,0 +1,100 @@
+// Move this file from src/models/schema.prisma to prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          String   @id @default(uuid())
+  firebaseUid String   @unique
+  email       String   @unique
+  name        String
+  avatar      String?
+  address     String?
+  phone       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Travel preferences
+  travelFrequency     String? // often, sometimes, rarely
+  primaryTravelReason String? // work, leisure, business
+  preferredDistance   String? // short, medium, long
+  primaryVehicle      String? // car, motorcycle, bus, van
+  
+  travels     Travel[]
+  emissions   Emission[]
+  preferences UserPreferences?
+  
+  @@map("users")
+}
+
+model UserPreferences {
+  id     String @id @default(uuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id])
+  
+  notifications      Boolean @default(true)
+  emailNotifications Boolean @default(false)
+  darkMode          Boolean @default(false)
+  units             String  @default("metric") // metric or imperial
+  
+  @@map("user_preferences")
+}
+
+model Travel {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  
+  origin      String
+  destination String
+  distance    Float    // in kilometers
+  vehicleType String   // car, motorcycle, bus, van, etc.
+  fuelType    String?  // petrol, diesel, electric, hybrid
+  passengers  Int      @default(1)
+  
+  scheduledAt DateTime?
+  completedAt DateTime?
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  emissions   Emission[]
+  
+  @@map("travels")
+}
+
+model Emission {
+  id       String @id @default(uuid())
+  userId   String
+  user     User   @relation(fields: [userId], references: [id])
+  travelId String?
+  travel   Travel? @relation(fields: [travelId], references: [id])
+  
+  amount      Float  // CO2 in kg
+  vehicleType String
+  distance    Float
+  date        DateTime @default(now())
+  
+  createdAt   DateTime @default(now())
+  
+  @@map("emissions")
+}
+
+model Notification {
+  id      String  @id @default(uuid())
+  userId  String
+  title   String
+  message String
+  read    Boolean @default(false)
+  type    String  @default("info") // info, warning, success
+  
+  createdAt DateTime @default(now())
+  
+  @@map("notifications")
+}
